@@ -89,13 +89,17 @@ function filterQuotes() {
 }
 
 // Function to add a new quote
-function addQuote() {
+async function addQuote() {
   const newQuoteText = document.getElementById('newQuoteText').value;
   const newQuoteCategory = document.getElementById('newQuoteCategory').value;
 
   if (newQuoteText && newQuoteCategory) {
-    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+    const newQuote = { text: newQuoteText, category: newQuoteCategory };
+    quotes.push(newQuote);
     saveQuotes();
+
+    // Post the new quote to the server
+    await postQuoteToServer(newQuote);
 
     const categoryFilter = document.getElementById('categoryFilter');
     if (![...categoryFilter.options].some(option => option.value === newQuoteCategory)) {
@@ -190,6 +194,26 @@ function mergeQuotes(fetchedQuotes) {
   
   saveQuotes(); // Save updated quotes to local storage
   filterQuotes(); // Update the displayed quotes
+}
+
+// Function to post a new quote to the server
+async function postQuoteToServer(quote) {
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(quote),
+    });
+    
+    if (!response.ok) throw new Error('Network response was not ok');
+    
+    const data = await response.json();
+    console.log('Quote posted to server:', data);
+  } catch (error) {
+    console.error('Error posting quote to server:', error);
+  }
 }
 
 // Attach event listener to the export button
