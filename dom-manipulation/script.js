@@ -112,7 +112,6 @@ function addQuote() {
     alert("Please fill in both fields!");
   }
 }
-
 // Function to export quotes as a JSON file
 function exportToJsonFile() {
   const dataStr = JSON.stringify(quotes, null, 2);
