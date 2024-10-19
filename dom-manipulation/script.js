@@ -167,6 +167,7 @@ async function fetchQuotesFromServer() {
     
     // Merge quotes with local quotes, resolving conflicts
     mergeQuotes(fetchedQuotes);
+    alert("Quotes synced with server!"); // Notify user of successful sync
   } catch (error) {
     console.error('Error fetching quotes from server:', error);
   }
