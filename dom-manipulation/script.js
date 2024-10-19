@@ -16,7 +16,7 @@ function loadQuotes() {
   }
 }
 
-// Function to dynamically create the form for adding new quotes
+// Function to create the form for adding new quotes
 function createAddQuoteForm() {
   const formContainer = document.getElementById('formContainer');
   
@@ -148,15 +148,61 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
+// Function to fetch quotes from the simulated server
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts'); // Simulated endpoint
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const data = await response.json();
+    // Transform the fetched data to match your quotes structure
+    const fetchedQuotes = data.map(item => ({
+      text: item.title, // Use title as quote text
+      category: 'General' // Assign a default category or modify as needed
+    }));
+    
+    // Merge quotes with local quotes, resolving conflicts
+    mergeQuotes(fetchedQuotes);
+  } catch (error) {
+    console.error('Error fetching quotes from server:', error);
+  }
+}
+
+// Function to merge server quotes with local quotes
+function mergeQuotes(fetchedQuotes) {
+  fetchedQuotes.forEach(fetchedQuote => {
+    const existingQuoteIndex = quotes.findIndex(quote => quote.text === fetchedQuote.text);
+    
+    if (existingQuoteIndex !== -1) {
+      // Conflict resolution: prompt user for action
+      const userChoice = confirm(`Conflict: The quote "${fetchedQuote.text}" already exists. Do you want to replace it with the server version?`);
+      if (userChoice) {
+        quotes[existingQuoteIndex] = fetchedQuote; // Replace local quote with server quote
+        console.log(`Replaced local quote with server quote: "${fetchedQuote.text}"`);
+      } else {
+        console.log(`Kept local version of quote: "${fetchedQuote.text}"`);
+      }
+    } else {
+      quotes.push(fetchedQuote);
+      console.log(`New quote added from server: "${fetchedQuote.text}"`);
+    }
+  });
+  
+  saveQuotes(); // Save updated quotes to local storage
+  filterQuotes(); // Update the displayed quotes
+}
+
 // Attach event listener to the export button
 document.getElementById('exportQuotesButton').addEventListener('click', exportToJsonFile);
 
 // Attach event listener to the "Show New Quote" button
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
-// Load the quotes from local storage when the page is loaded
+// Call fetchQuotesFromServer on window load and set up periodic fetching
 window.onload = function() {
   loadQuotes();
-  createAddQuoteForm();  // Ensure the form is generated after loading quotes
-  populateCategories(); // Populate categories after loading quotes
+  createAddQuoteForm();
+  populateCategories();
+  fetchQuotesFromServer(); // Initial fetch
+  setInterval(fetchQuotesFromServer, 60000); // Fetch new quotes every minute
 };
