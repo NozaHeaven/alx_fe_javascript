@@ -39,4 +39,69 @@ window.onload = function() {
 // Call the createAddQuoteForm function to render the form dynamically
 createAddQuoteForm();
 
+// Function to save the last viewed quote in session storage
+function saveLastViewedQuote(quote) {
+  sessionStorage.setItem('lastViewedQuote', JSON.stringify(quote));
+}
+
+// Modify showRandomQuote function to save the last viewed quote in session storage
+function showRandomQuote() {
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  const randomQuote = quotes[randomIndex];
+
+  // Select the quoteDisplay div and update its content
+  const quoteDisplay = document.getElementById('quoteDisplay');
+  quoteDisplay.innerHTML = `<p>"${randomQuote.text}" - <strong>${randomQuote.category}</strong></p>`;
+
+  // Save the last viewed quote in session storage
+  saveLastViewedQuote(randomQuote);
+}
+
+// Function to export quotes as a JSON file
+function exportToJsonFile() {
+  const dataStr = JSON.stringify(quotes, null, 2); // Pretty-print the JSON
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'quotes.json';
+  a.click();
+
+  URL.revokeObjectURL(url); // Free up memory
+}
+
+// Create an export button in HTML
+const exportButton = document.createElement('button');
+exportButton.textContent = 'Export Quotes';
+exportButton.addEventListener('click', exportToJsonFile);
+document.body.appendChild(exportButton);
+// Function to import quotes from a JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+
+  fileReader.onload = function(event) {
+    const importedQuotes = JSON.parse(event.target.result);
+
+    // Validate if it's an array and update quotes
+    if (Array.isArray(importedQuotes)) {
+      quotes.push(...importedQuotes);
+      saveQuotes(); // Save the newly imported quotes to local storage
+      alert('Quotes imported successfully!');
+    } else {
+      alert('Invalid file format.');
+    }
+  };
+
+  fileReader.readAsText(event.target.files[0]);
+}
+
+// Create a file input element in HTML
+const importInput = document.createElement('input');
+importInput.setAttribute('type', 'file');
+importInput.setAttribute('accept', '.json');
+importInput.addEventListener('change', importFromJsonFile);
+document.body.appendChild(importInput);
+
+
   
