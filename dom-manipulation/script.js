@@ -216,6 +216,12 @@ async function postQuoteToServer(quote) {
   }
 }
 
+// Function to sync quotes between local storage and server
+async function syncQuotes() {
+  await fetchQuotesFromServer(); // Fetch new quotes from the server
+  saveQuotes(); // Save current quotes to local storage
+}
+
 // Attach event listener to the export button
 document.getElementById('exportQuotesButton').addEventListener('click', exportToJsonFile);
 
@@ -228,5 +234,5 @@ window.onload = function() {
   createAddQuoteForm();
   populateCategories();
   fetchQuotesFromServer(); // Initial fetch
-  setInterval(fetchQuotesFromServer, 60000); // Fetch new quotes every minute
+  setInterval(syncQuotes, 60000); // Sync quotes with server every minute
 };
