@@ -112,7 +112,51 @@ function addQuote() {
     alert("Please fill in both fields!");
   }
 }
+
 // Function to export quotes as a JSON file
 function exportToJsonFile() {
   const dataStr = JSON.stringify(quotes, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json'
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'quotes.json';
+  a.click();
+
+  URL.revokeObjectURL(url); // Free up memory
+}
+
+// Function to import quotes from a JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+
+  fileReader.onload = function(event) {
+    const importedQuotes = JSON.parse(event.target.result);
+
+    if (Array.isArray(importedQuotes)) {
+      quotes.push(...importedQuotes);
+      saveQuotes();
+      alert('Quotes imported successfully!');
+      populateCategories(); // Refresh the category filter after import
+      filterQuotes(); // Update the displayed quotes
+    } else {
+      alert('Invalid file format.');
+    }
+  };
+
+  fileReader.readAsText(event.target.files[0]);
+}
+
+// Attach event listener to the export button
+document.getElementById('exportQuotesButton').addEventListener('click', exportToJsonFile);
+
+// Attach event listener to the "Show New Quote" button
+document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+
+// Load the quotes from local storage when the page is loaded
+window.onload = function() {
+  loadQuotes();
+  createAddQuoteForm();  // Ensure the form is generated after loading quotes
+  populateCategories(); // Populate categories after loading quotes
+};
